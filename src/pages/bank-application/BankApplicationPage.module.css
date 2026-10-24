@@ -1,0 +1,32 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); }
+
+.header { display: flex; flex-direction: column; gap: var(--space-3); }
+.back { display: inline-flex; align-items: center; gap: var(--space-1); align-self: flex-start; color: var(--color-text-secondary); font-size: var(--font-size-s); text-decoration: none; }
+.back:hover { color: var(--color-text-primary); }
+.headRow { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); }
+.number { font-size: var(--font-size-s); color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; }
+.title { font-family: var(--font-display); font-size: var(--font-size-3xl); }
+.meta { font-size: var(--font-size-s); color: var(--color-text-secondary); }
+.headStatus { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2); }
+
+.anchors { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.anchors a { padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); background: var(--color-surface); font-size: var(--font-size-s); color: var(--color-text-secondary); text-decoration: none; box-shadow: var(--shadow-s); }
+.anchors a:hover { color: var(--color-text-primary); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--space-5); align-items: start; }
+.main { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+.main > section { scroll-margin-top: calc(64px + var(--space-4)); }
+.aside { position: sticky; top: calc(64px + var(--space-4)); max-height: calc(100vh - 64px - var(--space-8)); overflow-y: auto; border-radius: var(--radius-l); }
+
+.pending { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-secondary); }
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .aside { position: static; max-height: none; order: -1; }
+}
+@media (max-width: 640px) {
+  .title { font-size: var(--font-size-2xl); }
+  .headStatus { align-items: flex-start; }
+}

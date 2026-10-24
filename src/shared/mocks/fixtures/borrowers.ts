@@ -1,0 +1,593 @@
+import type { MaritalStatus, TaxSystem } from '@/entities/application';
+import type { CompanyProfile } from '@/entities/user';
+
+/**
+ * Синтетические профили заёмщиков. Из них мок-«бэкенд» собирает
+ * предзаполнение анкеты, данные «внешних источников» (ЕГРЮЛ, БКИ, ФНС) и скоринг.
+ * Все ИНН/ОГРН выдуманы, но проходят контрольные суммы.
+ */
+
+export type BorrowerScenario =
+  | 'IDEAL'
+  | 'CASH_GAP'
+  | 'NO_HISTORY'
+  | 'HIGH_LOAD'
+  | 'TAX_DEBT'
+  | 'STRONG'
+  | 'AVERAGE';
+
+export interface BorrowerProfile {
+  company: CompanyProfile;
+  scenario: BorrowerScenario;
+  kpp: string | null;
+  director: string;
+  founders: { name: string; share: number }[];
+  taxSystem: TaxSystem;
+  maritalStatus: MaritalStatus | null;
+  spouseName: string | null;
+  contacts: { name: string; phone: string; email: string };
+  address: string;
+  massAddress: boolean;
+  registryChanges12m: number;
+  /** Поступления на счёт за 12 полных месяцев, от старых к новым. 0 — счёта ещё не было. */
+  inflow: number[];
+  outflow: number[];
+  /** Сколько клиент тратит в месяц (без кредитов) — для предзаполнения анкеты. */
+  monthlyExpenses: number;
+  bki: {
+    hasHistory: boolean;
+    rating: number | null;
+    activeLoans: number;
+    closedLoans: number;
+    totalDebt: number;
+    monthlyPayments: number;
+    maxOverdueDays: number;
+    overduesLast12m: number;
+    requestsLast30d: number;
+  };
+  tax: { debt: number; blockedAccounts: boolean };
+  industryRisk: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+/** Значения в миллионах рублей -> рубли. */
+const mln = (...values: number[]) => values.map((v) => Math.round(v * 1_000_000));
+
+const NO_BKI = {
+  hasHistory: false,
+  rating: null,
+  activeLoans: 0,
+  closedLoans: 0,
+  totalDebt: 0,
+  monthlyPayments: 0,
+  maxOverdueDays: 0,
+  overduesLast12m: 0,
+  requestsLast30d: 1,
+};
+
+const CLEAN_TAX = { debt: 0, blockedAccounts: false };
+
+export const BORROWERS: Record<string, BorrowerProfile> = {
+  // ---------- Демо-клиенты (есть логин) ----------
+  'c-romashka': {
+    scenario: 'IDEAL',
+    company: {
+      id: 'c-romashka',
+      legalForm: 'OOO',
+      name: 'ООО «Ромашка»',
+      inn: '7701234560',
+      ogrn: '1127746000007',
+      okved: '41.20',
+      okvedName: 'Строительство жилых и нежилых зданий',
+      registeredAt: '2016-03-14',
+      employees: 42,
+      annualRevenue: 86_000_000,
+      region: 'Москва',
+    },
+    kpp: '770101001',
+    director: 'Волков Сергей Игоревич',
+    founders: [
+      { name: 'Волков Сергей Игоревич', share: 70 },
+      { name: 'Лебедева Ольга Павловна', share: 30 },
+    ],
+    taxSystem: 'OSNO',
+    maritalStatus: null,
+    spouseName: null,
+    contacts: { name: 'Сергей Волков', phone: '+7 (916) 555-12-34', email: 's.volkov@romashka.example' },
+    address: 'г. Москва, ул. Строителей, д. 12, офис 4',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(6.4, 6.6, 7.4, 6.2, 6.5, 6.9, 7.0, 7.2, 7.1, 7.6, 7.9, 8.1),
+    outflow: mln(5.9, 6.1, 6.6, 5.8, 6.0, 6.3, 6.4, 6.6, 6.5, 6.9, 7.1, 7.3),
+    monthlyExpenses: 5_900_000,
+    bki: {
+      hasHistory: true,
+      rating: 812,
+      activeLoans: 1,
+      closedLoans: 4,
+      totalDebt: 2_100_000,
+      monthlyPayments: 160_000,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 1,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'MEDIUM',
+  },
+
+  'c-petrova': {
+    scenario: 'CASH_GAP',
+    company: {
+      id: 'c-petrova',
+      legalForm: 'IP',
+      name: 'ИП Петрова А. С.',
+      inn: '780412345685',
+      ogrn: '320784700012347',
+      okved: '47.71',
+      okvedName: 'Розничная торговля одеждой в специализированных магазинах',
+      registeredAt: '2020-09-01',
+      employees: 6,
+      annualRevenue: 14_500_000,
+      region: 'Санкт-Петербург',
+    },
+    kpp: null,
+    director: 'Петрова Анна Сергеевна',
+    founders: [],
+    taxSystem: 'USN_INCOME',
+    maritalStatus: 'MARRIED',
+    spouseName: 'Петров Илья Андреевич',
+    contacts: { name: 'Анна Петрова', phone: '+7 (921) 555-48-02', email: 'anna.petrova@shop.example' },
+    address: 'г. Санкт-Петербург, Невский пр-т, д. 88',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(1.35, 1.6, 1.9, 0.85, 0.8, 1.15, 1.3, 1.35, 0.95, 0.75, 1.45, 0.9),
+    outflow: mln(1.1, 1.2, 1.4, 1.05, 0.95, 1.0, 1.1, 1.15, 1.05, 1.0, 1.15, 1.05),
+    monthlyExpenses: 900_000,
+    bki: {
+      hasHistory: true,
+      rating: 701,
+      activeLoans: 0,
+      closedLoans: 2,
+      totalDebt: 0,
+      monthlyPayments: 0,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 1,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'MEDIUM',
+  },
+
+  'c-novikov': {
+    scenario: 'NO_HISTORY',
+    company: {
+      id: 'c-novikov',
+      legalForm: 'IP',
+      name: 'ИП Новиков Д. А.',
+      inn: '165512345632',
+      ogrn: '326169000045678',
+      okved: '56.10',
+      okvedName: 'Деятельность ресторанов и услуги по доставке продуктов питания',
+      registeredAt: '2026-02-10',
+      employees: 4,
+      annualRevenue: 3_700_000,
+      region: 'Республика Татарстан',
+    },
+    kpp: null,
+    director: 'Новиков Дмитрий Андреевич',
+    founders: [],
+    taxSystem: 'PSN',
+    maritalStatus: 'SINGLE',
+    spouseName: null,
+    contacts: { name: 'Дмитрий Новиков', phone: '+7 (987) 555-71-19', email: 'novikov.coffee@mail.example' },
+    address: 'г. Казань, ул. Баумана, д. 51',
+    massAddress: false,
+    registryChanges12m: 1,
+    inflow: mln(0, 0, 0, 0, 0.18, 0.32, 0.41, 0.45, 0.52, 0.56, 0.61, 0.64),
+    outflow: mln(0, 0, 0, 0, 0.35, 0.38, 0.36, 0.39, 0.44, 0.47, 0.5, 0.52),
+    monthlyExpenses: 420_000,
+    bki: NO_BKI,
+    tax: CLEAN_TAX,
+    industryRisk: 'HIGH',
+  },
+
+  // ---------- Остальные заёмщики (видны только в очереди банка) ----------
+  'c-vector': {
+    scenario: 'HIGH_LOAD',
+    company: {
+      id: 'c-vector',
+      legalForm: 'OOO',
+      name: 'ООО «Вектор Логистик»',
+      inn: '6670123457',
+      ogrn: '1156658000124',
+      okved: '49.41',
+      okvedName: 'Деятельность автомобильного грузового транспорта',
+      registeredAt: '2015-06-02',
+      employees: 120,
+      annualRevenue: 240_000_000,
+      region: 'Свердловская область',
+    },
+    kpp: '667001001',
+    director: 'Ковалев Артём Денисович',
+    founders: [{ name: 'Ковалев Артём Денисович', share: 100 }],
+    taxSystem: 'OSNO',
+    maritalStatus: null,
+    spouseName: null,
+    contacts: { name: 'Артём Ковалев', phone: '+7 (912) 555-30-61', email: 'info@vector-log.example' },
+    address: 'г. Екатеринбург, ул. Монтажников, д. 4',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(18.6, 19.2, 21.4, 17.8, 18.4, 19.6, 20.1, 20.4, 19.8, 20.6, 21.0, 20.2),
+    outflow: mln(17.9, 18.6, 20.3, 17.6, 18.0, 19.0, 19.4, 19.9, 19.5, 20.1, 20.4, 19.8),
+    monthlyExpenses: 16_000_000,
+    bki: {
+      hasHistory: true,
+      rating: 640,
+      activeLoans: 4,
+      closedLoans: 6,
+      totalDebt: 38_000_000,
+      monthlyPayments: 1_400_000,
+      maxOverdueDays: 7,
+      overduesLast12m: 2,
+      requestsLast30d: 5,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'MEDIUM',
+  },
+
+  'c-smirnov': {
+    scenario: 'TAX_DEBT',
+    company: {
+      id: 'c-smirnov',
+      legalForm: 'IP',
+      name: 'ИП Смирнов К. В.',
+      inn: '540698765406',
+      ogrn: '319547600011220',
+      okved: '56.10',
+      okvedName: 'Деятельность ресторанов и услуги по доставке продуктов питания',
+      registeredAt: '2019-04-18',
+      employees: 14,
+      annualRevenue: 10_800_000,
+      region: 'Новосибирская область',
+    },
+    kpp: null,
+    director: 'Смирнов Кирилл Владимирович',
+    founders: [],
+    taxSystem: 'USN_PROFIT',
+    maritalStatus: 'MARRIED',
+    spouseName: 'Смирнова Дарья Олеговна',
+    contacts: { name: 'Кирилл Смирнов', phone: '+7 (913) 555-90-17', email: 'smirnov.cafe@mail.example' },
+    address: 'г. Новосибирск, Красный пр-т, д. 25',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(0.95, 0.9, 1.1, 0.7, 0.75, 0.85, 0.9, 0.95, 0.92, 0.88, 0.9, 0.86),
+    outflow: mln(0.85, 0.86, 0.95, 0.78, 0.74, 0.8, 0.84, 0.88, 0.9, 0.86, 0.87, 0.85),
+    monthlyExpenses: 700_000,
+    bki: {
+      hasHistory: true,
+      rating: 590,
+      activeLoans: 1,
+      closedLoans: 1,
+      totalDebt: 420_000,
+      monthlyPayments: 45_000,
+      maxOverdueDays: 18,
+      overduesLast12m: 1,
+      requestsLast30d: 3,
+    },
+    tax: { debt: 186_400, blockedAccounts: true },
+    industryRisk: 'HIGH',
+  },
+
+  'c-technostroy': {
+    scenario: 'STRONG',
+    company: {
+      id: 'c-technostroy',
+      legalForm: 'OOO',
+      name: 'ООО «ТехноСтрой»',
+      inn: '7714987650',
+      ogrn: '1097746123452',
+      okved: '43.21',
+      okvedName: 'Производство электромонтажных работ',
+      registeredAt: '2009-11-23',
+      employees: 85,
+      annualRevenue: 460_000_000,
+      region: 'Москва',
+    },
+    kpp: '771401001',
+    director: 'Орлова Наталья Викторовна',
+    founders: [
+      { name: 'Орлова Наталья Викторовна', share: 50 },
+      { name: 'Гришин Павел Андреевич', share: 50 },
+    ],
+    taxSystem: 'OSNO',
+    maritalStatus: null,
+    spouseName: null,
+    contacts: { name: 'Наталья Орлова', phone: '+7 (495) 555-04-40', email: 'fin@technostroy.example' },
+    address: 'г. Москва, Варшавское ш., д. 118, корп. 1',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(35.2, 36.0, 41.5, 33.8, 34.6, 36.4, 37.0, 37.8, 37.2, 38.9, 39.6, 39.8),
+    outflow: mln(30.1, 30.8, 35.0, 29.7, 30.2, 31.4, 31.8, 32.5, 32.0, 33.1, 33.9, 34.0),
+    monthlyExpenses: 31_000_000,
+    bki: {
+      hasHistory: true,
+      rating: 798,
+      activeLoans: 2,
+      closedLoans: 9,
+      totalDebt: 16_500_000,
+      monthlyPayments: 900_000,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 1,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'MEDIUM',
+  },
+
+  'c-greengarden': {
+    scenario: 'AVERAGE',
+    company: {
+      id: 'c-greengarden',
+      legalForm: 'OOO',
+      name: 'ООО «Зелёный сад»',
+      inn: '2310345672',
+      ogrn: '1172375000456',
+      okved: '01.13',
+      okvedName: 'Выращивание овощей, бахчевых, корнеплодных культур',
+      registeredAt: '2017-03-29',
+      employees: 34,
+      annualRevenue: 52_000_000,
+      region: 'Краснодарский край',
+    },
+    kpp: '231001001',
+    director: 'Тарасов Михаил Юрьевич',
+    founders: [{ name: 'Тарасов Михаил Юрьевич', share: 100 }],
+    taxSystem: 'USN_PROFIT',
+    maritalStatus: null,
+    spouseName: null,
+    contacts: { name: 'Михаил Тарасов', phone: '+7 (918) 555-66-21', email: 'garden@agro.example' },
+    address: 'Краснодарский край, ст. Елизаветинская, ул. Полевая, д. 3',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(6.8, 3.9, 2.4, 1.8, 2.0, 2.9, 3.6, 4.4, 5.6, 6.9, 7.8, 6.5),
+    outflow: mln(4.1, 3.8, 3.5, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.5, 4.3),
+    monthlyExpenses: 3_600_000,
+    bki: {
+      hasHistory: true,
+      rating: 735,
+      activeLoans: 1,
+      closedLoans: 3,
+      totalDebt: 4_800_000,
+      monthlyPayments: 220_000,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 2,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'HIGH',
+  },
+
+  'c-kovaleva': {
+    scenario: 'IDEAL',
+    company: {
+      id: 'c-kovaleva',
+      legalForm: 'IP',
+      name: 'ИП Ковалёва Е. Н.',
+      inn: '631987654340',
+      ogrn: '318631300098769',
+      okved: '96.02',
+      okvedName: 'Предоставление услуг парикмахерскими и салонами красоты',
+      registeredAt: '2017-11-07',
+      employees: 9,
+      annualRevenue: 9_600_000,
+      region: 'Самарская область',
+    },
+    kpp: null,
+    director: 'Ковалёва Елена Николаевна',
+    founders: [],
+    taxSystem: 'PSN',
+    maritalStatus: 'SINGLE',
+    spouseName: null,
+    contacts: { name: 'Елена Ковалёва', phone: '+7 (927) 555-38-84', email: 'beauty@salon.example' },
+    address: 'г. Самара, ул. Куйбышева, д. 101',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(0.74, 0.76, 0.92, 0.7, 0.72, 0.78, 0.8, 0.82, 0.8, 0.84, 0.86, 0.88),
+    outflow: mln(0.6, 0.61, 0.68, 0.58, 0.6, 0.62, 0.63, 0.64, 0.63, 0.65, 0.66, 0.67),
+    monthlyExpenses: 600_000,
+    bki: {
+      hasHistory: true,
+      rating: 768,
+      activeLoans: 0,
+      closedLoans: 3,
+      totalDebt: 0,
+      monthlyPayments: 0,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 1,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'LOW',
+  },
+
+  'c-north': {
+    scenario: 'AVERAGE',
+    company: {
+      id: 'c-north',
+      legalForm: 'OOO',
+      name: 'ООО «Северный ветер»',
+      inn: '5190123455',
+      ogrn: '1135190003211',
+      okved: '46.90',
+      okvedName: 'Торговля оптовая неспециализированная',
+      registeredAt: '2013-08-15',
+      employees: 27,
+      annualRevenue: 96_000_000,
+      region: 'Мурманская область',
+    },
+    kpp: '519001001',
+    director: 'Белов Константин Олегович',
+    founders: [
+      { name: 'Белов Константин Олегович', share: 60 },
+      { name: 'ООО «Норд Холдинг»', share: 40 },
+    ],
+    taxSystem: 'OSNO',
+    maritalStatus: null,
+    spouseName: null,
+    contacts: { name: 'Константин Белов', phone: '+7 (815) 255-51-70', email: 'office@north-wind.example' },
+    address: 'г. Мурманск, пр-т Ленина, д. 45, офис 210',
+    massAddress: true,
+    registryChanges12m: 2,
+    inflow: mln(8.3, 8.1, 8.6, 7.6, 7.8, 8.0, 8.2, 8.1, 7.9, 7.8, 8.0, 7.7),
+    outflow: mln(7.6, 7.7, 8.0, 7.9, 7.4, 7.6, 7.7, 7.6, 7.5, 7.4, 7.6, 7.3),
+    monthlyExpenses: 6_200_000,
+    bki: {
+      hasHistory: true,
+      rating: 680,
+      activeLoans: 2,
+      closedLoans: 4,
+      totalDebt: 9_200_000,
+      monthlyPayments: 600_000,
+      maxOverdueDays: 5,
+      overduesLast12m: 1,
+      requestsLast30d: 2,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'MEDIUM',
+  },
+
+  'c-print': {
+    scenario: 'STRONG',
+    company: {
+      id: 'c-print',
+      legalForm: 'OOO',
+      name: 'ООО «Принт Мастер»',
+      inn: '7802123458',
+      ogrn: '1147847007770',
+      okved: '18.12',
+      okvedName: 'Прочие виды полиграфической деятельности',
+      registeredAt: '2014-02-11',
+      employees: 48,
+      annualRevenue: 70_000_000,
+      region: 'Санкт-Петербург',
+    },
+    kpp: '780201001',
+    director: 'Захаров Илья Сергеевич',
+    founders: [{ name: 'Захаров Илья Сергеевич', share: 100 }],
+    taxSystem: 'USN_PROFIT',
+    maritalStatus: null,
+    spouseName: null,
+    contacts: { name: 'Илья Захаров', phone: '+7 (812) 555-27-27', email: 'zakharov@printmaster.example' },
+    address: 'г. Санкт-Петербург, ул. Седова, д. 11',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(5.4, 5.6, 6.8, 5.0, 5.3, 5.7, 5.8, 6.0, 5.9, 6.1, 6.3, 6.4),
+    outflow: mln(4.6, 4.7, 5.6, 4.4, 4.6, 4.8, 4.9, 5.0, 5.0, 5.1, 5.2, 5.3),
+    monthlyExpenses: 4_700_000,
+    bki: {
+      hasHistory: true,
+      rating: 784,
+      activeLoans: 1,
+      closedLoans: 5,
+      totalDebt: 1_300_000,
+      monthlyPayments: 120_000,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 1,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'LOW',
+  },
+
+  'c-orlov': {
+    scenario: 'CASH_GAP',
+    company: {
+      id: 'c-orlov',
+      legalForm: 'IP',
+      name: 'ИП Орлов П. И.',
+      inn: '526012398714',
+      ogrn: '321527500008761',
+      okved: '45.20',
+      okvedName: 'Техническое обслуживание и ремонт автотранспортных средств',
+      registeredAt: '2018-05-21',
+      employees: 11,
+      annualRevenue: 18_000_000,
+      region: 'Нижегородская область',
+    },
+    kpp: null,
+    director: 'Орлов Павел Игоревич',
+    founders: [],
+    taxSystem: 'USN_INCOME',
+    maritalStatus: 'MARRIED',
+    spouseName: 'Орлова Светлана Петровна',
+    contacts: { name: 'Павел Орлов', phone: '+7 (920) 555-14-63', email: 'orlov.service@mail.example' },
+    address: 'г. Нижний Новгород, ул. Родионова, д. 7',
+    massAddress: false,
+    registryChanges12m: 0,
+    inflow: mln(1.7, 1.4, 1.1, 1.05, 1.2, 1.6, 1.75, 1.8, 1.55, 1.4, 1.65, 1.5),
+    outflow: mln(1.3, 1.3, 1.25, 1.2, 1.25, 1.3, 1.35, 1.4, 1.35, 1.45, 1.4, 1.35),
+    monthlyExpenses: 1_250_000,
+    bki: {
+      hasHistory: true,
+      rating: 742,
+      activeLoans: 0,
+      closedLoans: 2,
+      totalDebt: 0,
+      monthlyPayments: 0,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 1,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'MEDIUM',
+  },
+
+  'c-megapolis': {
+    scenario: 'STRONG',
+    company: {
+      id: 'c-megapolis',
+      legalForm: 'OOO',
+      name: 'ООО «Мегаполис-Девелопмент»',
+      inn: '7709876545',
+      ogrn: '1197746008888',
+      okved: '68.20',
+      okvedName: 'Аренда и управление собственным или арендованным недвижимым имуществом',
+      registeredAt: '2011-04-04',
+      employees: 22,
+      annualRevenue: 180_000_000,
+      region: 'Москва',
+    },
+    kpp: '770901001',
+    director: 'Сафронов Андрей Валерьевич',
+    founders: [
+      { name: 'Сафронов Андрей Валерьевич', share: 51 },
+      { name: 'Ким Елизавета Романовна', share: 49 },
+    ],
+    taxSystem: 'OSNO',
+    maritalStatus: null,
+    spouseName: null,
+    contacts: { name: 'Андрей Сафронов', phone: '+7 (495) 555-88-10', email: 'cfo@megapolis-dev.example' },
+    address: 'г. Москва, Пресненская наб., д. 8, стр. 1',
+    massAddress: false,
+    registryChanges12m: 1,
+    inflow: mln(14.2, 14.6, 15.8, 14.0, 14.3, 14.8, 15.0, 15.2, 15.1, 15.6, 15.9, 16.1),
+    outflow: mln(10.8, 11.0, 12.1, 10.6, 10.9, 11.2, 11.4, 11.5, 11.5, 11.8, 12.0, 12.2),
+    monthlyExpenses: 10_500_000,
+    bki: {
+      hasHistory: true,
+      rating: 776,
+      activeLoans: 3,
+      closedLoans: 7,
+      totalDebt: 64_000_000,
+      monthlyPayments: 1_900_000,
+      maxOverdueDays: 0,
+      overduesLast12m: 0,
+      requestsLast30d: 2,
+    },
+    tax: CLEAN_TAX,
+    industryRisk: 'LOW',
+  },
+};
+
+export function findBorrower(id: string): BorrowerProfile | undefined {
+  return BORROWERS[id];
+}

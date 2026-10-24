@@ -1,0 +1,27 @@
+.list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.item { display: flex; gap: var(--space-3); padding: var(--space-4) 0; border-bottom: 1px solid var(--color-border); }
+.item:first-child { padding-top: 0; }
+.item:last-child { padding-bottom: 0; border-bottom: 0; }
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-s);
+  background: var(--color-bg-field);
+  color: var(--color-text-secondary);
+}
+
+.body { display: flex; flex: 1; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.title { font-weight: var(--font-weight-medium); }
+.amount { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.meta { font-size: var(--font-size-s); color: var(--color-text-secondary); }
+
+.progress { height: 4px; margin: var(--space-1) 0; border-radius: var(--radius-full); background: var(--color-bg-muted); overflow: hidden; }
+.progress span { display: block; height: 100%; border-radius: inherit; background: var(--color-ink); }
+
+.empty { color: var(--color-text-secondary); font-size: var(--font-size-s); }

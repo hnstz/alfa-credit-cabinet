@@ -1,0 +1,40 @@
+.flow { display: flex; flex-direction: column; gap: var(--space-6); }
+.heading { margin-bottom: var(--space-3); font-size: var(--font-size-l); }
+
+.docs { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.doc { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-m); }
+.docIcon { display: inline-flex; color: var(--color-brand); }
+.docBody { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.docTitle { font-weight: var(--font-weight-medium); }
+.docMeta { font-size: var(--font-size-s); color: var(--color-text-secondary); }
+
+.note { margin-top: var(--space-2); font-size: var(--font-size-s); color: var(--color-text-secondary); }
+
+.codeForm { display: flex; flex-direction: column; gap: var(--space-4); }
+.codeRow { display: flex; align-items: flex-end; gap: var(--space-3); }
+.codeInput { max-width: 220px; }
+.codeInput input { letter-spacing: 0.3em; font-variant-numeric: tabular-nums; }
+.codeSubmit { flex-shrink: 0; }
+.demoCode { font-size: var(--font-size-l); letter-spacing: 0.12em; }
+.resend { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--color-text-link); font-size: var(--font-size-s); text-decoration: underline; }
+.resend:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Просмотр документа */
+.preview { display: flex; flex-direction: column; gap: var(--space-4); }
+.previewLead { color: var(--color-text-secondary); font-size: var(--font-size-s); }
+.terms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+.terms dt { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.terms dd { margin: 0; font-weight: var(--font-weight-medium); }
+
+.schedule { width: 100%; font-size: var(--font-size-s); font-variant-numeric: tabular-nums; }
+.schedule th { padding: var(--space-2); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); color: var(--color-text-secondary); text-align: right; border-bottom: 1px solid var(--color-border); }
+.schedule td { padding: var(--space-2); text-align: right; border-bottom: 1px solid var(--color-border); }
+.schedule th:first-child, .schedule td:first-child { text-align: left; }
+
+@media (max-width: 560px) {
+  .doc { flex-wrap: wrap; }
+  .codeRow { flex-direction: column; align-items: stretch; }
+  .codeInput { max-width: none; }
+  .terms { grid-template-columns: 1fr; }
+  .schedule { display: block; overflow-x: auto; }
+}

@@ -1,0 +1,1 @@
+export { ApplicationNewPage } from './ApplicationNewPage';

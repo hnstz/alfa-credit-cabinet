@@ -1,0 +1,10 @@
+.page { display: flex; flex-direction: column; gap: var(--space-6); }
+.header { display: flex; flex-direction: column; gap: var(--space-2); }
+.back { display: inline-flex; align-items: center; gap: var(--space-1); align-self: flex-start; color: var(--color-text-secondary); font-size: var(--font-size-s); text-decoration: none; }
+.back:hover { color: var(--color-text-primary); }
+.title { font-family: var(--font-display); font-size: var(--font-size-3xl); }
+.subtitle { color: var(--color-text-secondary); }
+
+@media (max-width: 640px) {
+  .title { font-size: var(--font-size-2xl); }
+}

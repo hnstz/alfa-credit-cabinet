@@ -1,0 +1,70 @@
+.stack { display: flex; flex-direction: column; gap: var(--space-6); }
+
+.hero { display: flex; align-items: flex-start; gap: var(--space-5); padding: var(--space-8); border-radius: var(--radius-xl); }
+.hero_success { background: var(--color-success-soft); }
+.hero_brand { background: var(--color-brand-soft); }
+.hero_neutral { background: var(--color-surface); box-shadow: var(--shadow-s); }
+.heroIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-surface);
+}
+.hero_success .heroIcon { color: var(--color-success); }
+.hero_brand .heroIcon { color: var(--color-brand); }
+.hero_neutral .heroIcon { color: var(--color-text-secondary); background: var(--color-bg-field); }
+.heroTitle { font-family: var(--font-display); font-size: var(--font-size-3xl); }
+.heroText { margin-top: var(--space-2); max-width: 640px; color: var(--color-text-primary); }
+
+.terms { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-6); margin: 0; }
+.terms dt { font-size: var(--font-size-s); color: var(--color-text-secondary); }
+.terms dd { margin: var(--space-1) 0 0; font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); font-variant-numeric: tabular-nums; }
+.termMain { grid-column: 1 / -1; }
+.termMain dd { font-family: var(--font-display); font-size: var(--font-size-4xl); }
+
+.actions { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
+.actionsRow { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+.sectionTitle { margin-bottom: var(--space-4); font-size: var(--font-size-l); }
+.steps { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding-left: var(--space-5); }
+.steps li::marker { color: var(--color-brand); font-weight: var(--font-weight-bold); }
+
+/* Сравнение */
+.compare { width: 100%; font-variant-numeric: tabular-nums; }
+.compare th, .compare td { padding: var(--space-4); border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+.compare thead th { padding-top: 0; font-size: var(--font-size-s); font-weight: var(--font-weight-medium); color: var(--color-text-secondary); }
+.compare tbody th { font-weight: var(--font-weight-regular); color: var(--color-text-secondary); }
+.compare tbody tr:last-child th, .compare tbody tr:last-child td { border-bottom: 0; }
+.requested { color: var(--color-text-secondary); }
+.offerCol { background: var(--color-bg-field); }
+.compare td.offerCol { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-3); }
+.compare thead .offerCol { color: var(--color-text-primary); border-radius: var(--radius-m) var(--radius-m) 0 0; padding-top: var(--space-4); }
+.compare strong { font-size: var(--font-size-l); }
+
+.delta { display: inline-flex; align-items: center; gap: 2px; font-size: var(--font-size-s); font-weight: var(--font-weight-medium); white-space: nowrap; }
+.better { color: var(--color-success); }
+.worse { color: var(--color-warning); }
+.same { font-size: var(--font-size-s); color: var(--color-text-tertiary); }
+.footnote { margin-top: var(--space-4); font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+
+.twoCols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
+.reasonTitle { margin-bottom: var(--space-2); font-weight: var(--font-weight-medium); }
+.muted { color: var(--color-text-secondary); }
+.muted a { color: var(--color-text-link); }
+
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 860px) {
+  .terms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .twoCols { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .hero { flex-direction: column; padding: var(--space-6); }
+  .heroTitle { font-size: var(--font-size-2xl); }
+  .termMain dd { font-size: var(--font-size-3xl); }
+  .compare th, .compare td { padding: var(--space-3) var(--space-2); }
+}

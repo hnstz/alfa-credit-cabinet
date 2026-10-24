@@ -1,0 +1,21 @@
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--space-8);
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+.select:disabled { cursor: not-allowed; }
+
+/* Пока выбран placeholder (value=""), красим текст как у placeholder */
+.select:has(option[value='']:checked) { color: var(--color-text-tertiary); }
+
+.chevron {
+  position: absolute;
+  right: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}

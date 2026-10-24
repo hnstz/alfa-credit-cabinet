@@ -1,0 +1,76 @@
+.report { display: flex; flex-direction: column; gap: var(--space-6); }
+
+.metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+.metrics dt { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.metrics dd { margin: var(--space-1) 0 0; font-size: var(--font-size-l); font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; }
+.metricMain { font-family: var(--font-display); font-size: var(--font-size-3xl) !important; font-weight: var(--font-weight-bold) !important; line-height: 1; }
+
+/* Шкала */
+.scale { padding-top: var(--space-6); }
+.track { position: relative; height: 28px; border-radius: var(--radius-s); background: var(--color-bg-field); }
+.zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-right: 2px solid var(--color-surface);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+.zone:first-child { border-radius: var(--radius-s) 0 0 var(--radius-s); }
+.zone:last-of-type { border-right: 0; border-radius: 0 var(--radius-s) var(--radius-s) 0; }
+.zone_high { background: var(--color-danger-soft); color: var(--color-danger); }
+.zone_medium { background: var(--color-warning-soft); color: var(--color-warning); }
+.zone_low { background: var(--color-success-soft); color: var(--color-success); }
+.pointer { position: absolute; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: var(--color-ink); box-shadow: 0 0 0 2px var(--color-surface); transform: translateX(-50%); }
+.pointerLabel { position: absolute; bottom: calc(100% + 4px); left: 50%; padding: 1px 6px; border-radius: var(--radius-xs); background: var(--color-ink); color: var(--color-on-brand); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); transform: translateX(-50%); }
+.scaleTicks { position: relative; height: 18px; margin-top: var(--space-1); font-size: 11px; color: var(--color-text-tertiary); }
+.scaleTicks span { position: absolute; transform: translateX(-50%); }
+.scaleTicks span:first-child { transform: none; }
+.scaleTicks span:last-child { transform: translateX(-100%); }
+
+/* Факторы */
+.factorsHead { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.subTitle { font-size: var(--font-size-m); }
+.legend { display: flex; gap: var(--space-4); font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: var(--space-1); }
+.swatchPositive, .swatchNegative { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+.swatchPositive { background: var(--chart-1); }
+.swatchNegative { background: var(--chart-2); }
+
+.factors { display: flex; flex-direction: column; margin: 0 0 var(--space-2); padding: 0; list-style: none; }
+.factor {
+  display: grid;
+  grid-template-columns: minmax(180px, 34%) minmax(0, 1fr) 64px;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.factor:last-child { border-bottom: 0; }
+.factorText { display: flex; flex-direction: column; min-width: 0; }
+.factorLabel { font-size: var(--font-size-s); font-weight: var(--font-weight-medium); }
+.factorValue { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.factorBarArea { position: relative; height: 20px; }
+.axis { position: absolute; top: -4px; bottom: -4px; left: 50%; width: 1px; background: var(--color-border-strong); }
+.bar { position: absolute; top: 3px; bottom: 3px; }
+.barPositive { border-radius: 0 4px 4px 0; background: var(--chart-1); }
+.barNegative { border-radius: 4px 0 0 4px; background: var(--chart-2); }
+.impact { display: inline-flex; align-items: center; justify-content: flex-end; gap: 2px; font-size: var(--font-size-s); font-weight: var(--font-weight-bold); font-variant-numeric: tabular-nums; color: var(--color-text-primary); }
+.impactPositive svg { color: var(--chart-1); }
+.impactNegative svg { color: var(--chart-2); }
+
+.footnote { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+
+@media (max-width: 860px) {
+  .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .factor { grid-template-columns: minmax(0, 1fr) 56px; }
+  .factorBarArea { grid-column: 1 / -1; grid-row: 2; }
+}

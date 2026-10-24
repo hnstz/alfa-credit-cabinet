@@ -1,0 +1,54 @@
+.feed { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); }
+.heading { font-family: var(--font-display); font-size: var(--font-size-2xl); }
+.list { display: flex; flex-direction: column; gap: var(--space-4); }
+.empty { padding: var(--space-8) 0; color: var(--color-text-secondary); text-align: center; }
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-s);
+  overflow: hidden;
+}
+.cardTop { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-1); }
+.time { margin-left: auto; font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+.title { font-size: var(--font-size-l); }
+.text { color: var(--color-text-secondary); font-size: var(--font-size-s); }
+.actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-2); }
+
+/* Статус: цветная полоса слева по тону статуса */
+.statusCard::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--color-border); }
+.accent_success::before { background: var(--color-success); }
+.accent_info::before { background: var(--color-info); }
+.accent_warning::before { background: var(--color-warning); }
+.accent_danger::before { background: var(--color-text-tertiary); }
+.accent_brand::before { background: var(--color-brand); }
+.accent_neutral::before { background: var(--color-border-strong); }
+
+/* Предложение */
+.offerCard { background: linear-gradient(135deg, var(--color-brand-soft) 0%, var(--color-surface) 70%); }
+.offerFacts { display: flex; flex-wrap: wrap; gap: var(--space-6); margin: var(--space-2) 0 0; }
+.offerFacts dt { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.offerFacts dd { margin: 0; font-size: var(--font-size-l); font-weight: var(--font-weight-bold); white-space: nowrap; }
+.perks { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-1) 0 0; padding: 0; list-style: none; }
+.perks li { padding: 2px var(--space-2); border-radius: var(--radius-full); background: var(--color-surface); font-size: var(--font-size-xs); color: var(--color-text-secondary); box-shadow: inset 0 0 0 1px var(--color-border); }
+.offerProduct { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+
+/* Совет */
+.tipIcon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-s); background: var(--color-bg-field); }
+.tipKind { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+.highlight { margin-left: auto; font-size: var(--font-size-l); font-variant-numeric: tabular-nums; }
+.tip_positive { color: var(--color-success); }
+.tip_warning { color: var(--color-warning); }
+.tip_neutral { color: var(--color-text-primary); }
+.chart { margin-top: var(--space-3); }
+
+@media (max-width: 560px) {
+  .card { padding: var(--space-4); }
+  .time { margin-left: 0; width: 100%; }
+}

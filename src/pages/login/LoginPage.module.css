@@ -1,0 +1,4 @@
+.page { display: flex; flex-direction: column; gap: var(--space-6); }
+.title { font-size: var(--font-size-3xl); }
+.subtitle { margin-top: var(--space-2); color: var(--color-text-secondary); }
+.demo { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); font-size: var(--font-size-xs); color: var(--color-text-tertiary); }

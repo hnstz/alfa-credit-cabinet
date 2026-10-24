@@ -1,0 +1,47 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-m);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  user-select: none;
+  transition: background-color var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease),
+    box-shadow var(--duration-fast) var(--ease);
+}
+.button:focus-visible { outline: 0; box-shadow: var(--focus-ring); border-color: var(--color-ink); }
+.button:disabled { cursor: not-allowed; opacity: 0.5; }
+.full { width: 100%; }
+
+.size_s { height: var(--control-height-s); padding: 0 var(--space-4); font-size: var(--font-size-s); }
+.size_m { height: var(--control-height-m); padding: 0 var(--space-6); font-size: var(--font-size-m); }
+.size_l { height: var(--control-height-l); padding: 0 var(--space-8); font-size: var(--font-size-m); }
+
+/* Варианты */
+.primary { background: var(--color-brand); color: var(--color-on-brand); }
+.primary:hover:not(:disabled) { background: var(--color-brand-hover); }
+.primary:active:not(:disabled) { background: var(--color-brand-active); }
+
+.secondary { background: var(--color-bg-muted); color: var(--color-text-primary); }
+.secondary:hover:not(:disabled) { background: var(--color-border); }
+.secondary:active:not(:disabled) { background: var(--color-border-strong); }
+
+.outline { background: transparent; color: var(--color-text-primary); border-color: var(--color-border-strong); }
+.outline:hover:not(:disabled) { background: var(--color-bg-field); border-color: var(--color-ink); }
+
+.ghost { background: transparent; color: var(--color-text-primary); }
+.ghost:hover:not(:disabled) { background: var(--color-bg-field); }
+
+.danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.danger:hover:not(:disabled) { background: #fbd9d6; }
+
+/* Загрузка */
+.loading { cursor: progress; }
+.spinner { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

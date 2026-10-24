@@ -1,0 +1,3 @@
+.control { align-items: stretch; height: auto; padding: var(--space-3) var(--space-4); }
+.textarea { min-height: 72px; resize: vertical; line-height: var(--line-height-base); }
+.counter { align-self: flex-end; margin-top: calc(-1 * var(--space-1)); font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
