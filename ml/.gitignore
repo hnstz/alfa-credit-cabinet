@@ -1,0 +1,14 @@
+# Виртуальное окружение и кеши Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Логи и локальные переопределения настроек
+*.log
+.env
+
+# Тяжёлые результаты обучения: пересобираются командой python train.py
+artifacts/synthetic_dataset.csv
+artifacts/lpr_interactions.csv
+artifacts/real_msme_resmlp.pt

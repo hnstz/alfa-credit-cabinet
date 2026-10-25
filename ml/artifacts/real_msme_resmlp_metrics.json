@@ -1,0 +1,10 @@
+{
+  "model_version": "resmlp-reference-1.0",
+  "trained_at": "2026-10-24T19:47:30",
+  "note": "архитектура из открытого Kaggle-решения (TF ResMLP), реализация на torch",
+  "n_params": 2875138,
+  "accuracy": 0.9391,
+  "auc": 0.673,
+  "ks": 0.4408,
+  "positive_predicted_rate": 0.0
+}

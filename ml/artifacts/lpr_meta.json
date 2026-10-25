@@ -1,0 +1,10 @@
+{
+  "model_version": "lpr-propensity-1.0",
+  "trained_at": "2026-10-24T19:47:45",
+  "n_train": 10036,
+  "n_test": 1964,
+  "auc": 0.6923,
+  "ks": 0.2983,
+  "accept_rate_test": 0.5173,
+  "p_mean_test": 0.4951
+}

@@ -1,0 +1,308 @@
+[
+  {
+    "scenario": "идеальный заёмщик (одобрение)",
+    "application": {
+      "features": {
+        "inn": "7700005288",
+        "full_name": "Дмитрий Волкова",
+        "org_form": "ИП",
+        "sector": "Медицина",
+        "years_in_business": 0.92,
+        "employees": 7,
+        "annual_revenue": 960000.0,
+        "avg_monthly_turnover": 80000.0,
+        "net_profit_margin": 0.2636,
+        "expense_ratio": 0.6182,
+        "cash_gap_flag": false,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": -3.9,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 940,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 51,
+        "has_collateral": true,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 200000.0,
+      "requested_term": 24,
+      "loan_purpose": "пополнение оборотных средств"
+    }
+  },
+  {
+    "scenario": "пограничный (встречное)",
+    "application": {
+      "features": {
+        "inn": "7700005595",
+        "full_name": "Юлия Лебедева",
+        "org_form": "ООО",
+        "sector": "Грузоперевозки",
+        "years_in_business": 4.17,
+        "employees": 10,
+        "annual_revenue": 42596522.0,
+        "avg_monthly_turnover": 3549710.0,
+        "net_profit_margin": 0.0194,
+        "expense_ratio": 0.9496,
+        "cash_gap_flag": true,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": 0.5,
+        "active_loans": 1,
+        "existing_monthly_debt": 197596.0,
+        "bkii_score": 790,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 47,
+        "has_collateral": true,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 6440000.0,
+      "requested_term": 36,
+      "loan_purpose": "пополнение оборотных средств"
+    }
+  },
+  {
+    "scenario": "просрочки 90+ (отказ по риску)",
+    "application": {
+      "features": {
+        "inn": "7700000100",
+        "full_name": "Дмитрий Соколов",
+        "org_form": "ООО",
+        "sector": "Строительство",
+        "years_in_business": 3.41,
+        "employees": 8,
+        "annual_revenue": 960000.0,
+        "avg_monthly_turnover": 80000.0,
+        "net_profit_margin": 0.072,
+        "expense_ratio": 0.9444,
+        "cash_gap_flag": true,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": 10.7,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 774,
+        "overdue_30d_max_days": 164,
+        "overdue_90d_count": 2,
+        "applicant_age": 56,
+        "has_collateral": true,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 200000.0,
+      "requested_term": 18,
+      "loan_purpose": "оборудование/развитие"
+    }
+  },
+  {
+    "scenario": "холодный старт ИП",
+    "application": {
+      "features": {
+        "inn": "7700000157",
+        "full_name": "Татьяна Смирнов",
+        "org_form": "ООО",
+        "sector": "Производство",
+        "years_in_business": 0.1,
+        "employees": 5,
+        "annual_revenue": 960000.0,
+        "avg_monthly_turnover": 80000.0,
+        "net_profit_margin": 0.1926,
+        "expense_ratio": 0.7807,
+        "cash_gap_flag": true,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": 23.6,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 848,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 45,
+        "has_collateral": false,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 330000.0,
+      "requested_term": 36,
+      "loan_purpose": "пополнение оборотных средств"
+    }
+  },
+  {
+    "scenario": "кассовый разрыв (овердрафт)",
+    "application": {
+      "features": {
+        "inn": "7700000006",
+        "full_name": "Юлия Волкова",
+        "org_form": "ООО",
+        "sector": "Общепит",
+        "years_in_business": 2.28,
+        "employees": 9,
+        "annual_revenue": 1154415.0,
+        "avg_monthly_turnover": 96201.0,
+        "net_profit_margin": 0.2042,
+        "expense_ratio": 0.6429,
+        "cash_gap_flag": true,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": -5.9,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 808,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 36,
+        "has_collateral": false,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 200000.0,
+      "requested_term": 12,
+      "loan_purpose": "пополнение оборотных средств"
+    }
+  },
+  {
+    "scenario": "самозапрет на кредиты (запрет → отказ в обход модели)",
+    "application": {
+      "features": {
+        "inn": "7700005020",
+        "full_name": "Елена Козлов",
+        "org_form": "ООО",
+        "sector": "Сельское хозяйство",
+        "years_in_business": 4.26,
+        "employees": 5,
+        "annual_revenue": 960000.0,
+        "avg_monthly_turnover": 80000.0,
+        "net_profit_margin": 0.1819,
+        "expense_ratio": 0.805,
+        "cash_gap_flag": false,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": 10.8,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 920,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 21,
+        "has_collateral": true,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "self"
+      },
+      "requested_amount": 200000.0,
+      "requested_term": 18,
+      "loan_purpose": "оборудование/развитие"
+    }
+  },
+  {
+    "scenario": "налоговый долг (цель: закрыть долг)",
+    "application": {
+      "features": {
+        "inn": "7700011800",
+        "full_name": "Анна Морозов",
+        "org_form": "ООО",
+        "sector": "Сельское хозяйство",
+        "years_in_business": 6.47,
+        "employees": 5,
+        "annual_revenue": 960000.0,
+        "avg_monthly_turnover": 80000.0,
+        "net_profit_margin": 0.0348,
+        "expense_ratio": 0.9158,
+        "cash_gap_flag": false,
+        "tax_debt": 157000.0,
+        "turnover_trend_3m_pct": -16.6,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 890,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 64,
+        "has_collateral": true,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 200000.0,
+      "requested_term": 18,
+      "loan_purpose": "пополнение оборотных средств"
+    }
+  },
+  {
+    "scenario": "обновление парка техники (лизинг)",
+    "application": {
+      "features": {
+        "inn": "7700008266",
+        "full_name": "Сергей Кузнецов",
+        "org_form": "Самозанятый",
+        "sector": "Грузоперевозки",
+        "years_in_business": 1.1,
+        "employees": 9,
+        "annual_revenue": 960000.0,
+        "avg_monthly_turnover": 80000.0,
+        "net_profit_margin": 0.1458,
+        "expense_ratio": 0.8716,
+        "cash_gap_flag": false,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": 3.7,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 903,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 44,
+        "has_collateral": true,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 200000.0,
+      "requested_term": 12,
+      "loan_purpose": "оборудование/развитие"
+    }
+  },
+  {
+    "scenario": "рост оборота (оборотные средства)",
+    "application": {
+      "features": {
+        "inn": "7700013209",
+        "full_name": "Сергей Иванова",
+        "org_form": "ООО",
+        "sector": "Медицина",
+        "years_in_business": 9.1,
+        "employees": 4,
+        "annual_revenue": 960000.0,
+        "avg_monthly_turnover": 80000.0,
+        "net_profit_margin": 0.0748,
+        "expense_ratio": 0.8313,
+        "cash_gap_flag": false,
+        "tax_debt": 0.0,
+        "turnover_trend_3m_pct": 19.1,
+        "active_loans": 0,
+        "existing_monthly_debt": 0.0,
+        "bkii_score": 940,
+        "overdue_30d_max_days": 0,
+        "overdue_90d_count": 0,
+        "applicant_age": 34,
+        "has_collateral": true,
+        "region": "Москва"
+      },
+      "ban": {
+        "source": "none"
+      },
+      "requested_amount": 200000.0,
+      "requested_term": 24,
+      "loan_purpose": "кассовый разрыв"
+    }
+  }
+]
