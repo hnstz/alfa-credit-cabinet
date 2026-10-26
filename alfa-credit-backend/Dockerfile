@@ -28,6 +28,8 @@ WORKDIR /app
 
 COPY --from=build /app/alfa-credit-backend/build/libs/*.jar app.jar
 
+RUN apk add curl
+
 EXPOSE 8080
 
 ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]
