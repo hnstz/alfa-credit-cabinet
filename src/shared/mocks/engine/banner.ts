@@ -1,4 +1,6 @@
-import type { PersonalBanner } from '@/entities/banner';
+import { PRODUCTS } from '@/entities/application';
+import type { ProductCode } from '@/entities/application';
+import type { BannerTheme, PersonalBanner } from '@/entities/banner';
 import { config } from '@/shared/config';
 import { formatMoney, formatMoneyShort, formatMonths, formatPercent } from '@/shared/lib/format';
 import type { BorrowerProfile } from '../fixtures/borrowers';
@@ -14,6 +16,8 @@ import { businessAgeMonths } from './scoring';
  *                              ^^^^^^^^^^^^^^
  *            ЕДИНСТВЕННОЕ место, где подключается ML-модель
  *            (контракт описан в docs/ML_BANNER.md)
+ *
+ * Рядом с персональным на витрине стоят два классических баннера — classicBanners().
  */
 
 const DAY = 86_400_000;
@@ -453,4 +457,80 @@ export function renderBanner(ctx: BannerContext, prediction: ModelPrediction, no
     score: prediction.score,
     reasons: prediction.reasons?.length ? prediction.reasons : entry.reasons,
   };
+}
+
+/* =========================================================
+   4. Классический ряд витрины — продуктовые баннеры, от клиента не зависят
+   ========================================================= */
+
+interface ClassicEntry {
+  product: ProductCode;
+  amount: number;
+  termMonths: number;
+  title: string;
+  text: string;
+  perks: string[];
+  ctaLabel: string;
+}
+
+/**
+ * Линейка как в ML (ml/personal_predlozhenie/offers.py → CLASSIC_LINEUP): оборотный кредит и кредитная линия.
+ * Ставка «от» — из справочника продуктов, того же, что в анкете. Третий продукт запасной:
+ * если персональный баннер уже предлагает продукт из линейки, на его месте встаёт этот,
+ * чтобы на одном экране не было двух разных лимитов по одному продукту.
+ */
+const CLASSIC_LINEUP: ClassicEntry[] = [
+  {
+    product: 'WORKING_CAPITAL',
+    amount: 3_000_000,
+    termMonths: 24,
+    title: 'Кредит на оборотные средства',
+    text: 'Закупка товара, зарплаты, аренда и налоги. Решение по заявке — в течение дня.',
+    perks: ['Онлайн-заявка за 5 минут'],
+    ctaLabel: 'Оформить',
+  },
+  {
+    product: 'CREDIT_LINE',
+    amount: 5_000_000,
+    termMonths: 24,
+    title: 'Кредитная линия',
+    text: 'Берёте деньги частями, когда нужно, и платите проценты только за использованную сумму.',
+    perks: ['Лимит восстанавливается'],
+    ctaLabel: 'Подключить',
+  },
+  {
+    product: 'INVESTMENT',
+    amount: 10_000_000,
+    termMonths: 36,
+    title: 'Кредит на развитие бизнеса',
+    text: 'Новая точка, ремонт, расширение производства: длинный срок и комфортный платёж.',
+    perks: ['Срок до 5 лет'],
+    ctaLabel: 'Рассчитать',
+  },
+];
+
+const CLASSIC_THEMES: BannerTheme[] = ['amethyst', 'salad'];
+
+/** Два классических баннера витрины. Продукт персонального баннера в них не повторяется. */
+export function classicBanners(personal: PersonalBanner | null): PersonalBanner[] {
+  const taken = personal?.cta?.kind === 'NEW_APPLICATION' ? personal.cta.product : null;
+  return CLASSIC_LINEUP.filter((c) => c.product !== taken)
+    .slice(0, CLASSIC_THEMES.length)
+    .map((c, i) => ({
+      // id одинаковый у всех клиентов: условия общие, а счётчики показов фронт ведёт по пользователю
+      id: `CLASSIC:${c.product}`,
+      code: `CLASSIC_${c.product}`,
+      modelVersion: 'catalog',
+      score: 0, // классический баннер модель не выбирает
+      title: c.title,
+      text: c.text,
+      highlight: {
+        value: `до ${formatMoneyShort(c.amount)}`,
+        caption: `от ${formatPercent(PRODUCTS[c.product].rateFrom)} на ${formatMonths(c.termMonths)}`,
+      },
+      perks: c.perks,
+      theme: CLASSIC_THEMES[i],
+      cta: { kind: 'NEW_APPLICATION', label: c.ctaLabel, product: c.product, amount: c.amount, termMonths: c.termMonths },
+      reasons: [],
+    }));
 }

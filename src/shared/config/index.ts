@@ -10,6 +10,8 @@ export interface RuntimeConfig {
   ML_API_URL: string;
   /** Отдельный адрес модели баннера. Пусто — берётся ML_API_URL + '/predict'. */
   BANNER_MODEL_URL: string;
+  /** Демо: подпись «показов без реакции N из 4» на баннерах витрины. */
+  SHOW_BANNER_COUNTERS: boolean;
 }
 
 declare global {
@@ -31,6 +33,7 @@ export const config = {
   apiUrl: apiUrl.replace(/\/$/, ''),
   useMocks: runtime.USE_MOCKS ?? env.VITE_USE_MOCKS === 'true',
   showDemoAccounts: runtime.SHOW_DEMO_ACCOUNTS ?? true,
+  showBannerCounters: runtime.SHOW_BANNER_COUNTERS ?? false,
   mlApiUrl,
   bannerModelUrl,
 } as const;

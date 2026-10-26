@@ -1,0 +1,11 @@
+.showcase { display: grid; grid-template-columns: repeat(var(--banners, 3), minmax(0, 1fr)); gap: var(--space-4); }
+.skeleton { border-radius: var(--radius-l); }
+
+@media (max-width: 1024px) {
+  .showcase { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Нечётное число баннеров: первый (персональный) на всю ширину, остальные парой под ним */
+  .showcase > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .showcase { grid-template-columns: 1fr; }
+}

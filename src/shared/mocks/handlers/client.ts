@@ -1,7 +1,9 @@
 import { delay, http, HttpResponse } from 'msw';
 import { findBorrower } from '../fixtures/borrowers';
 import { withDb } from '../db';
-import { buildBannerContext, predictBanner, renderBanner } from '../engine/banner';
+import type { PersonalBanner } from '@/entities/banner';
+import type { BorrowerProfile } from '../fixtures/borrowers';
+import { buildBannerContext, classicBanners, predictBanner, renderBanner } from '../engine/banner';
 import { buildFeed } from '../engine/feed';
 import { errorResponse, requireRole, url } from './session';
 
@@ -22,7 +24,14 @@ function logBannerEvent(userId: string, bannerId: string, event: string) {
   console.debug('[banner:event]', event, bannerId);
 }
 
-/** Сводка клиента: продукты, персональная лента и баннер. */
+/** Признаки клиента → модель → каталог. null — модель решила ничего не показывать. */
+async function personalBanner(userId: string, profile: BorrowerProfile): Promise<PersonalBanner | null> {
+  const { ctx, now } = withDb((db, at) => ({ ctx: buildBannerContext(db, userId, profile, at), now: at }));
+  const prediction = await predictBanner(ctx);
+  return prediction ? renderBanner(ctx, prediction, now) : null;
+}
+
+/** Сводка клиента: продукты, персональная лента и баннеры. */
 export const clientHandlers = [
   http.get(url('/client/products'), async ({ request }) => {
     await delay(250);
@@ -48,10 +57,20 @@ export const clientHandlers = [
     const profile = user.company ? findBorrower(user.company.id) : undefined;
     if (!profile) return errorResponse(404, 'NO_PROFILE', 'Профиль компании не найден');
 
-    const { ctx, now } = withDb((db, at) => ({ ctx: buildBannerContext(db, user.id, profile, at), now: at }));
-    const prediction = await predictBanner(ctx);
-    if (!prediction) return new HttpResponse(null, { status: 204 });
-    return HttpResponse.json(renderBanner(ctx, prediction, now));
+    const banner = await personalBanner(user.id, profile);
+    return banner ? HttpResponse.json(banner) : new HttpResponse(null, { status: 204 });
+  }),
+
+  /** Витрина дашборда: один персональный баннер (null — модель промолчала) и два классических. */
+  http.get(url('/client/banners'), async ({ request }) => {
+    await delay(300);
+    const user = requireRole(request, 'client');
+    if (user instanceof Response) return user;
+    const profile = user.company ? findBorrower(user.company.id) : undefined;
+    if (!profile) return errorResponse(404, 'NO_PROFILE', 'Профиль компании не найден');
+
+    const personal = await personalBanner(user.id, profile);
+    return HttpResponse.json({ personal, classic: classicBanners(personal) });
   }),
 
   http.post(url('/client/banner/events'), async ({ request }) => {

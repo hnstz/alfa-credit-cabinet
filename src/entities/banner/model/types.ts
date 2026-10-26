@@ -1,12 +1,13 @@
 import type { ProductCode } from '@/entities/application';
 
 /**
- * Персональный баннер на дашборде клиента.
- * Модель выбирает, какой баннер показать, и объясняет почему (reasons);
- * тексты и условия берутся из каталога баннеров на стороне сервера.
+ * Баннеры на дашборде клиента: витрина из одного персонального и двух классических.
+ * Персональный выбирает модель и объясняет почему (reasons); классические — продуктовая
+ * линейка банка, от клиента не зависят. Тексты и условия берутся из каталога на стороне сервера.
  */
 
-export type BannerTheme = 'brand' | 'dark' | 'positive' | 'warning';
+/** amethyst и salad — светлые продуктовые темы классических баннеров. */
+export type BannerTheme = 'brand' | 'dark' | 'positive' | 'warning' | 'amethyst' | 'salad';
 
 export type BannerCta =
   /** Открыть анкету с подставленными условиями. */
@@ -39,6 +40,14 @@ export interface PersonalBanner {
   validUntil?: string;
   /** Почему клиент видит этот баннер — простым языком, для блока «Почему я это вижу». */
   reasons: string[];
+}
+
+/** Витрина на дашборде (GET /client/banners): один персональный баннер и два классических. */
+export interface BannerShowcase {
+  /** Выбирает модель. null — модель решила ничего не показывать. */
+  personal: PersonalBanner | null;
+  /** Продуктовые баннеры: условия одинаковые для всех клиентов. */
+  classic: PersonalBanner[];
 }
 
 export type BannerEventType = 'VIEW' | 'CLICK' | 'DISMISS';

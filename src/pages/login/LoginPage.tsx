@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clearBannerShows } from '@/entities/banner';
 import { LoginForm } from '@/features/auth';
 import { api } from '@/shared/api';
 import { config } from '@/shared/config';
@@ -13,6 +14,7 @@ function DemoReset() {
     setState('pending');
     try {
       await api.post<void>('/demo/reset', undefined, { skipAuth: true });
+      clearBannerShows(); // счётчики показов витрины живут в браузере — сбрасываем вместе с данными
       setState('done');
     } catch {
       setState('idle');
