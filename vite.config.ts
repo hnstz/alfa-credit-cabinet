@@ -1,7 +1,7 @@
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import react, {reactCompilerPreset} from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
-import { defineConfig } from 'vite'
-import { fileURLToPath } from 'node:url';
+import {defineConfig} from 'vite'
+import {fileURLToPath} from 'node:url';
 // Адрес ML-сервиса (каталог ml/). 127.0.0.1, а не localhost: Node может резолвить localhost в ::1,
 // а uvicorn по умолчанию слушает IPv4.
 const ML_TARGET = process.env.ML_PROXY_TARGET ?? 'http://127.0.0.1:8000'
@@ -15,7 +15,15 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
-  server: { proxy: mlProxy },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      ...mlProxy,
+    },
+  },
   preview: { proxy: mlProxy },
   resolve: {
     alias: {
