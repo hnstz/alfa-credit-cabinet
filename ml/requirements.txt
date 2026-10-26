@@ -8,3 +8,4 @@ openpyxl>=3.1            # чтение Kaggle MSME .xlsx (real_scoring)
 catboost>=1.2.5
 scikit-learn>=1.5
 joblib>=1.4
+torch
