@@ -1,13 +1,33 @@
 # Персональный баннер: как подключить модель
 
-Баннер показывается вверху дашборда клиента (`/`). Что именно показать, выбирает модель.
-Тексты, суммы и кнопки живут в **каталоге баннеров** (`src/shared/mocks/engine/banner.ts → catalogEntry`),
-модель возвращает только код баннера и уверенность.
+Вверху дашборда клиента (`/`) стоит **витрина из трёх баннеров**: один персональный и два классических
+(правило показа из [`ml/README.md`](../ml/README.md), раздел «Показ баннеров»).
+
+- **Персональный** — что показать, выбирает модель. Тексты, суммы и кнопки живут в **каталоге баннеров**
+  (`src/shared/mocks/engine/banner.ts → catalogEntry`), модель возвращает только код баннера и уверенность.
+- **Классические** — продуктовая линейка банка: кредит на оборотные средства и кредитная линия, условия одинаковые
+  для всех клиентов (`classicBanners()` там же). Если персональный баннер уже предлагает один из этих продуктов,
+  его место в классическом ряду занимает инвестиционный кредит — чтобы на экране не было двух разных лимитов по одному продукту.
 
 ```
-GET /api/client/banner ─► buildBannerContext() ─► predictBanner() ─► renderBanner() ─► PersonalBanner (JSON)
-                          признаки клиента          МОДЕЛЬ            каталог текстов
+GET /api/client/banners ─► buildBannerContext() ─► predictBanner() ─► renderBanner() ─► personal
+                           признаки клиента          МОДЕЛЬ            каталог текстов
+                        └► classicBanners(personal) ─────────────────────────────────► classic[2]
 ```
+
+### Правило показа: 4 показа без реакции
+
+| Показов без реакции | Что делает витрина |
+|---|---|
+| 1–4 | баннер остаётся |
+| больше 4 | баннер скрывается |
+| клик по кнопке баннера | счётчик обнуляется |
+
+Показ — одно открытие дашборда с этим баннером (автообновление дашборда не считается). Счётчики ведёт фронтенд
+(`src/entities/banner/model/shows.ts`) в `localStorage['alfa-credit:banner-shows']`, отдельно для каждого пользователя;
+новый повод показа (другой `id` баннера) — новый счётчик. Те же показы и клики уходят на сервер событиями `VIEW` / `CLICK`
+для аналитики и дообучения. Для демо на карточках видна подпись «Показов без реакции: N из 4»
+(`SHOW_BANNER_COUNTERS` в `public/config.js`); кнопка «Сбросить демо-данные» на странице входа обнуляет счётчики.
 
 ## Быстрое подключение (модель как HTTP-сервис)
 
@@ -82,9 +102,25 @@ GET /api/client/banner ─► buildBannerContext() ─► predictBanner() ─►
 
 ## Контракт фронтенд ↔ бэкенд (если модель стоит за реальным бэкендом)
 
-Фронт знает только эти два эндпоинта (OpenAPI-фрагмент ниже). Откуда бэкенд берёт баннер — детали реализации.
+Дашборд ходит в `GET /client/banners` (витрина) и `POST /client/banner/events` (OpenAPI-фрагмент ниже).
+`GET /client/banner` — только персональный баннер, оставлен для совместимости. Откуда бэкенд берёт баннеры — детали реализации.
 
 ```yaml
+/client/banners:
+  get:
+    summary: Витрина дашборда — один персональный баннер и два классических
+    security: [{ bearerAuth: [] }]
+    responses:
+      "200":
+        description: Витрина
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [personal, classic]
+              properties:
+                personal: { nullable: true, allOf: [{ $ref: "#/components/schemas/PersonalBanner" }], description: "null — модель решила ничего не показывать" }
+                classic: { type: array, maxItems: 2, items: { $ref: "#/components/schemas/PersonalBanner" }, description: "Продуктовые баннеры: modelVersion = catalog, score = 0, без reasons" }
 /client/banner:
   get:
     summary: Персональный баннер клиента
@@ -120,7 +156,7 @@ components:
         badge: { type: string }
         highlight: { type: object, required: [value], properties: { value: { type: string }, caption: { type: string } } }
         perks: { type: array, items: { type: string } }
-        theme: { type: string, enum: [brand, dark, positive, warning] }
+        theme: { type: string, enum: [brand, dark, positive, warning, amethyst, salad], description: "amethyst / salad — темы классических баннеров" }
         validUntil: { type: string, format: date-time }
         reasons: { type: array, items: { type: string } }
         cta:
@@ -132,26 +168,31 @@ components:
             - { type: object, properties: { kind: { const: LINK }, label: { type: string }, href: { type: string, description: "Только внутренний путь, начинается с /" } } }
 ```
 
-Если подключаете реальный бэкенд (`USE_MOCKS: false`), он должен реализовать оба эндпоинта; фронтенд менять не нужно.
+Если подключаете реальный бэкенд (`USE_MOCKS: false`), он должен реализовать `GET /client/banners` и `POST /client/banner/events`
+(в `alfa-credit-backend` — `ClientController`); фронтенд менять не нужно.
 
 ## Что смотреть на демо
 
-| Логин | Баннер | Почему |
+| Логин | Персональный баннер | Почему |
 |---|---|---|
 | `romashka` | «Кредит одобрен — осталось оформить» | есть одобренная заявка |
 | `petrova` | «У банка есть предложение для вас» | встречное предложение |
 | `novikov` | «Заявка ждёт вас» | незаконченная анкета |
 
-После отказа/подписания/закрытия заявок баннер меняется на рекомендацию модели (кредитная линия, подушка на слабые месяцы, стартовый кредит и т. д.).
-Журнал событий VIEW/CLICK/DISMISS: `localStorage['alfa-credit:banner-events']`.
+Рядом с персональным у всех — классические «Кредит на оборотные средства» и «Кредитная линия».
+После отказа/подписания/закрытия заявок персональный баннер меняется на рекомендацию модели (кредитная линия, подушка на слабые месяцы, стартовый кредит и т. д.).
+
+Проверка правила показа: откройте дашборд 4 раза подряд (подпись дойдёт до «4 из 4»), на 5-й раз баннеры исчезнут.
+Нажмите кнопку на одном из них до этого — у него счётчик начнётся заново с 1.
+Журнал событий VIEW/CLICK/DISMISS: `localStorage['alfa-credit:banner-events']`, счётчики показов: `localStorage['alfa-credit:banner-shows']`.
 «Закрыть» (×) прячет баннер до конца сессии вкладки, новый повод показа (другой `id`) покажется снова.
 
 ## Файлы
 
 | Файл | Роль |
 |---|---|
-| `src/entities/banner/` | тип `PersonalBanner`, API-клиент (`GET /client/banner`, `POST /client/banner/events`) |
-| `src/widgets/personal-banner/` | виджет: тема, CTA, «Почему я это вижу», закрытие, отправка событий |
-| `src/shared/mocks/engine/banner.ts` | **признаки → модель → каталог**; здесь подключается ваша модель |
-| `src/shared/mocks/handlers/client.ts` | MSW-обработчики баннера |
+| `src/entities/banner/` | типы `PersonalBanner` и `BannerShowcase`, API-клиент (`GET /client/banners`, `POST /client/banner/events`), правило показа (`model/shows.ts`) |
+| `src/widgets/banner-showcase/` | витрина из трёх карточек: тема, CTA, «Почему я это вижу», закрытие, счётчик показов, отправка событий |
+| `src/shared/mocks/engine/banner.ts` | **признаки → модель → каталог**; здесь подключается ваша модель. Там же классический ряд (`classicBanners`) |
+| `src/shared/mocks/handlers/client.ts` | MSW-обработчики баннеров |
 | `src/pages/client-home/ClientHomePage.tsx` | встраивание в дашборд |

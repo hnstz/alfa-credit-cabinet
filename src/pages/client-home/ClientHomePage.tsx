@@ -20,8 +20,8 @@ import { formatDayMonth, formatMoney, formatRelative } from '@/shared/lib/format
 import { useAutoReload, useNow, useRequest } from '@/shared/lib/hooks';
 import { ButtonLink, Card, CardHeader, Skeleton } from '@/shared/ui';
 import { ChevronRightIcon, PenIcon, PlusIcon } from '@/shared/ui/icons';
+import { BannerShowcase } from '@/widgets/banner-showcase';
 import { NewsFeed } from '@/widgets/news-feed';
-import { PersonalBanner } from '@/widgets/personal-banner';
 import styles from './ClientHomePage.module.css';
 
 /** Заявка ещё идёт по автоматическим этапам — дашборд обновляем чаще. */
@@ -68,14 +68,14 @@ export function ClientHomePage() {
   const draft = useRequest('draft', (signal) => applicationApi.getDraftSummary(signal));
   const products = useRequest('products', (signal) => productApi.list(signal));
   const feed = useRequest('feed', (signal) => feedApi.list(signal));
-  const banner = useRequest('banner', (signal) => bannerApi.get(signal));
+  const banners = useRequest('banners', (signal) => bannerApi.showcase(signal));
 
   // Пока заявка идёт по конвейеру — обновляем часто, чтобы лента и статусы менялись на глазах
   const moving = applications.data?.some(isMoving) ?? false;
   useAutoReload(() => {
     applications.reload();
     feed.reload();
-    banner.reload();
+    banners.reload();
     products.reload();
     draft.reload();
   }, moving ? 4_000 : 20_000);
@@ -103,7 +103,7 @@ export function ClientHomePage() {
         </ButtonLink>
       </header>
 
-      <PersonalBanner banner={banner.data} loading={banner.loading} />
+      <BannerShowcase showcase={banners.data} loading={banners.loading} />
 
       <section className={styles.kpis} aria-label="Сводка">
         <Card padding="m" className={styles.kpi}>

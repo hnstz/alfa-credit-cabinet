@@ -30,7 +30,7 @@ npm run dev                  # запросы /ml/* проксируются н�
 
 | Что | Откуда | Если ML недоступен |
 |---|---|---|
-| Баннер на дашборде | ML `POST /predict` | правила-заглушка (`rules-stub-0.1`) |
+| Персональный баннер на дашборде (1 из 3 в витрине) | ML `POST /predict` | правила-заглушка (`rules-stub-0.1`) |
 | Скоринг заявки: PD, риск-грейд, факторы SHAP, условия одобрения / встречного, причины отказа | ML `POST /score` + `POST /decision` | локальный скоринг (`smb-score 2.4 (демо)`) |
 | Авторизация, анкеты, статусы, подписание, ЕГРЮЛ / БКИ / ФНС, лента, очередь банка | по-прежнему MSW | — |
 
@@ -59,16 +59,22 @@ npm run dev                  # запросы /ml/* проксируются н�
 src/
   app/        провайдеры, роутер (lazy-маршруты по зонам), лэйауты, стили и токены
   pages/      client-home, application-new, application/{status,decision,signing}, bank-queue, bank-application
-  widgets/    news-feed, application-pipeline, decision-outcome, scoring-report, enrichment-report, audit-log
+  widgets/    banner-showcase, news-feed, application-pipeline, decision-outcome, scoring-report, enrichment-report, audit-log
   features/   auth, application-wizard, track-application, offer-response, sign-documents, bank-decision
   entities/   application (статусы, этапы конвейера, типы, API), product, feed, banner, user
   shared/     api-клиент, ui-кит, lib (форматирование, аннуитет, реквизиты, хуки), config, mocks
 ```
 
-### Персональный баннер (ML)
+### Витрина баннеров (ML)
 
-Над сводкой на дашборде показывается баннер, который выбирает модель; клиент видит, **почему** (кнопка «Почему я это вижу»),
-может скрыть его, а события показа/клика/закрытия уходят в журнал для дообучения.
+Над сводкой на дашборде — **три баннера: один персональный и два классических** (правило показа из [`ml/README.md`](ml/README.md#показ-баннеров)).
+Персональный выбирает модель; клиент видит, **почему** (кнопка «Почему я это вижу»). Классические — продуктовая линейка
+(кредит на оборотные средства и кредитная линия), от клиента не зависят. Всё приходит одним запросом `GET /client/banners`.
+
+Правило показа: у каждого баннера считаются показы без реакции — с 1-го по 4-й баннер остаётся, дальше скрывается,
+клик по кнопке баннера обнуляет счётчик. Для демо на карточках подписано «Показов без реакции: N из 4»
+(`SHOW_BANNER_COUNTERS` в `public/config.js`). События показа/клика/закрытия уходят в журнал для дообучения.
+
 Модель подключается через `ML_API_URL` в `public/config.js` (баннер берётся с `POST {ML_API_URL}/predict`; отдельный адрес — `BANNER_MODEL_URL`); без неё или при недоступности сервиса работает встроенная заглушка на правилах.
 Контракт запроса/ответа, коды баннеров и OpenAPI-фрагмент — в [`docs/ML_BANNER.md`](docs/ML_BANNER.md).
 
@@ -76,7 +82,7 @@ src/
 
 | Путь | Экран |
 |---|---|
-| `/` | Дашборд: сводка, заявки, продукты, персональная лента |
+| `/` | Дашборд: витрина из трёх баннеров, сводка, заявки, продукты, персональная лента |
 | `/applications/new` | Smart-анкета (мастер из 4 шагов). `?product=&amount=&term=` — подстановка из предложения |
 | `/applications/:id` | Статус: этапы NEW → DATA_CHECK → ENRICHMENT → SCORING → DECISION |
 | `/applications/:id/decision` | Решение: одобрение / встречное предложение / отказ |
@@ -106,4 +112,4 @@ src/
 
 Основные эндпоинты: `GET/POST/PUT/DELETE /applications/draft`, `POST /applications/draft/submit`,
 `GET /applications/:id`, `POST /applications/:id/offer/{accept,decline}`, `POST /applications/:id/signing/{code,confirm}`,
-`GET /client/{products,feed,banner}`, `POST /client/banner/events`, `GET /bank/applications`, `GET /bank/applications/:id`, `POST /bank/applications/:id/decision`.
+`GET /client/{products,feed,banners}`, `POST /client/banner/events`, `GET /bank/applications`, `GET /bank/applications/:id`, `POST /bank/applications/:id/decision`.

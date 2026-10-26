@@ -105,6 +105,10 @@
   --color-accent-purple: #9933ff;
   --color-accent-blue: #0055ff;
 
+  /* ---- Продуктовые темы баннеров (вёрстка «Альфа-Бизнес Онлайн») ---- */
+  --color-accent-amethyst: #dfbfff;
+  --color-accent-salad: #d6f09a;
+
   /* ---- Текст ---- */
   --color-ink: var(--color-black);
   --color-text-primary: var(--color-black);
