@@ -1,0 +1,48 @@
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Gradle
+alfa-credit-backend/.gradle/
+alfa-credit-backend/build/
+alfa-credit-backend/out/
+
+# Node
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Docker (сами compose-файлы нужны, но не другие файлы docker)
+.dockerignore
+
+# Docs
+docs/
+README.md
+
+# Frontend (не нужен для бэкенд-контейнера)
+src/
+public/
+vite.config.ts
+tsconfig*.json
+eslint.config.js
+index.html
+
+# ML (уже имеет свой Dockerfile)
+ml/
+
+# Root gradle (если есть)
+gradle/
+*.gradle*
+
+# Misc
+*.md
+.env
+.env.*
+!env.example
