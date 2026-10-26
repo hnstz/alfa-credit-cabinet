@@ -1,0 +1,99 @@
+# Запуск всего стека:
+#   docker compose up --build
+#
+# Сервисы:
+#   - PostgreSQL: localhost:5432 (база alfa_credit, пользователь postgres/postgres)
+#   - Бэкенд:    http://localhost:8080 (Swagger: /swagger-ui.html, OpenAPI: /api-docs)
+#   - ML sidecar: http://localhost:8000 (Swagger: /docs)
+#
+# Опциональный LLM-провайдер (Ollama):
+#   docker compose --profile llm up --build
+# ======
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: alfa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: alfa_credit
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: .
+      dockerfile: alfa-credit-backend/Dockerfile
+    container_name: alfa-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/alfa_credit
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_FLYWAY_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  ml:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+      args:
+        ML_SEED: "42"
+        ML_N_RECORDS: "15000"
+    image: alfa-hack/ml-sidecar:1.0
+    container_name: alfa-ml
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      ML_KEY_RATE: "17.0"
+      ML_LLM_ENABLED: "false"
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4).status==200 else 1)" ]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Опциональный LLM-провайдер (open-weights). Включается отдельно:
+  #   docker compose --profile llm up --build
+  ollama:
+    profiles: [ "llm" ]
+    image: ollama/ollama:latest
+    container_name: alfa-llm
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+
+volumes:
+  postgres_data:
+  ollama_models:
