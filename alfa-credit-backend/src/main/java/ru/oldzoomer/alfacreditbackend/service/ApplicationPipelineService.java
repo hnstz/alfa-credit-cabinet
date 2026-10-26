@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Service;
 import ru.oldzoomer.alfacreditbackend.entity.ApplicationStatus;
 import ru.oldzoomer.alfacreditbackend.entity.AuditEntry;
+import ru.oldzoomer.alfacreditbackend.entity.User;
 import ru.oldzoomer.alfacreditbackend.repository.ApplicationRepository;
 import ru.oldzoomer.alfacreditbackend.repository.AuditEntryRepository;
 import ru.oldzoomer.alfacreditbackend.repository.UserRepository;
@@ -22,9 +23,6 @@ import java.util.*;
 public class ApplicationPipelineService {
 
     private static final ObjectMapper mapper = new ObjectMapper();
-    private static final int TOTAL_STEPS = 4;
-
-    public static final int TOTAL_APPLICATION_STEPS = 4;
 
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
@@ -208,7 +206,7 @@ public class ApplicationPipelineService {
     /**
      * Подтвердить подписание.
      */
-    public ru.oldzoomer.alfacreditbackend.entity.Application confirmSigning(String applicationId, String code, Instant now) {
+    public ru.oldzoomer.alfacreditbackend.entity.Application confirmSigning(String applicationId, Instant now) {
         ru.oldzoomer.alfacreditbackend.entity.Application app = getApplication(applicationId);
         statusTransitionValidator.validateAndTransition(app.getStatus(), ApplicationStatus.SIGNED);
 
@@ -309,7 +307,7 @@ public class ApplicationPipelineService {
 
     private String getUserName(String userId) {
         return userRepository.findById(userId)
-                .map(u -> u.getFullName())
+                .map(User::getFullName)
                 .orElse("Unknown");
     }
 

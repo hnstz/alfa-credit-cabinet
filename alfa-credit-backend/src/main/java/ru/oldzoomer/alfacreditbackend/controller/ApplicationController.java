@@ -1,6 +1,5 @@
 package ru.oldzoomer.alfacreditbackend.controller;
 
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -11,13 +10,11 @@ import ru.oldzoomer.alfacreditbackend.entity.User;
 import ru.oldzoomer.alfacreditbackend.repository.ApplicationRepository;
 import ru.oldzoomer.alfacreditbackend.repository.DraftRepository;
 import ru.oldzoomer.alfacreditbackend.service.ApplicationPipelineService;
-import ru.oldzoomer.alfacreditbackend.service.ClientService;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -26,16 +23,13 @@ public class ApplicationController {
     private final ApplicationRepository applicationRepository;
     private final DraftRepository draftRepository;
     private final ApplicationPipelineService pipelineService;
-    private final ClientService clientService;
 
     public ApplicationController(ApplicationRepository applicationRepository,
                                  DraftRepository draftRepository,
-                                 ApplicationPipelineService pipelineService,
-                                 ClientService clientService) {
+                                 ApplicationPipelineService pipelineService) {
         this.applicationRepository = applicationRepository;
         this.draftRepository = draftRepository;
         this.pipelineService = pipelineService;
-        this.clientService = clientService;
     }
 
     // --- Черновик ---
@@ -108,7 +102,7 @@ public class ApplicationController {
     @DeleteMapping("/draft")
     public ResponseEntity<Void> deleteDraft(@AuthenticationPrincipal User user) {
         Optional<Draft> opt = draftRepository.findByUserId(user.getId());
-        opt.ifPresent(d -> draftRepository.delete(d));
+        opt.ifPresent(draftRepository::delete);
         return ResponseEntity.noContent().build();
     }
 
@@ -196,7 +190,7 @@ public class ApplicationController {
         if (!app.getUserId().equals(user.getId())) {
             return ResponseEntity.status(403).body(null);
         }
-        Application updated = pipelineService.confirmSigning(id, "", Instant.now());
+        Application updated = pipelineService.confirmSigning(id, Instant.now());
         return ResponseEntity.ok(toClientApplicationDto(updated));
     }
 
