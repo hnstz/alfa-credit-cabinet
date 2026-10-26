@@ -233,7 +233,8 @@ function seedApplication(db: MockDb, spec: SeedSpec, now: number) {
   form.finance = { ...form.finance, ...spec.finance };
   form.consents = { creditHistory: true, dataProcessing: true };
 
-  const hooks = disbursementHooks(db);
+  // Демо-история собирается синхронно, поэтому её скоринг — локальный; ML работает для новых заявок
+  const hooks: PipelineHooks = { ...disbursementHooks(db), localScoringOnly: true };
   const t0 = now - spec.submittedAgo;
   const app = createApplication({
     ...nextNumber(db),
