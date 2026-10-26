@@ -52,9 +52,10 @@ public class ClientService {
         // Simple rule-based banner logic (like the frontend mock)
         // In production: call ML model endpoint
 
-        // For now, return a simple default banner
+        // For now, return a simple default banner.
+        // id стабилен, пока не сменился повод показа: по нему фронт считает показы без реакции
         return new PersonalBanner(
-                "banner-" + user.getId() + "-" + System.currentTimeMillis(),
+                "WORKING_CAPITAL:" + user.getId(),
                 "WORKING_CAPITAL",
                 "rule-based-v1",
                 0.7,
@@ -68,6 +69,45 @@ public class ClientService {
                 List.of("У вас стабильные обороты", "Хорошая кредитная история"),
                 new PersonalBanner.CtaDto("NEW_APPLICATION", "Подать заявку", "WORKING_CAPITAL", 1_000_000L, 12, null, null, null)
         );
+    }
+
+    /**
+     * Классический ряд витрины: продуктовые баннеры, условия одинаковые для всех клиентов.
+     * Третий продукт запасной: встаёт вместо продукта, который уже предлагает персональный баннер.
+     */
+    private static final List<ClassicBanner> CLASSIC_LINEUP = List.of(
+            new ClassicBanner("WORKING_CAPITAL", "Кредит на оборотные средства",
+                    "Закупка товара, зарплаты, аренда и налоги. Решение по заявке — в течение дня.",
+                    "Онлайн-заявка за 5 минут", "до 3 млн ₽", "от 17,5 % на 24 месяца", "Оформить", 3_000_000L, 24),
+            new ClassicBanner("CREDIT_LINE", "Кредитная линия",
+                    "Берёте деньги частями, когда нужно, и платите проценты только за использованную сумму.",
+                    "Лимит восстанавливается", "до 5 млн ₽", "от 18,5 % на 24 месяца", "Подключить", 5_000_000L, 24),
+            new ClassicBanner("INVESTMENT", "Кредит на развитие бизнеса",
+                    "Новая точка, ремонт, расширение производства: длинный срок и комфортный платёж.",
+                    "Срок до 5 лет", "до 10 млн ₽", "от 16,9 % на 36 месяцев", "Рассчитать", 10_000_000L, 36)
+    );
+
+    private static final List<String> CLASSIC_THEMES = List.of("amethyst", "salad");
+
+    /**
+     * Витрина дашборда: один персональный баннер и два классических.
+     * Правило «4 показа без реакции» применяет фронтенд по событиям VIEW / CLICK.
+     */
+    public BannerShowcase getShowcase(User user) {
+        PersonalBanner personal = getBanner(user);
+        String taken = personal != null && personal.cta() != null && "NEW_APPLICATION".equals(personal.cta().kind())
+                ? personal.cta().product()
+                : null;
+        List<PersonalBanner> classic = new ArrayList<>();
+        for (ClassicBanner entry : CLASSIC_LINEUP) {
+            if (classic.size() == CLASSIC_THEMES.size()) {
+                break;
+            }
+            if (!entry.product().equals(taken)) {
+                classic.add(entry.toBanner(CLASSIC_THEMES.get(classic.size())));
+            }
+        }
+        return new BannerShowcase(personal, classic);
     }
 
     public void logBannerEvent(User user, String bannerId, String event) {
@@ -106,6 +146,43 @@ public class ClientService {
                 String applicationStatus,
                 String href
         ) {
+        }
+    }
+
+    /**
+     * DTO витрины: персональный баннер (null — модель решила ничего не показывать) и классические.
+     */
+    public record BannerShowcase(PersonalBanner personal, List<PersonalBanner> classic) {
+    }
+
+    private record ClassicBanner(
+            String product,
+            String title,
+            String text,
+            String perk,
+            String highlight,
+            String caption,
+            String ctaLabel,
+            Long amount,
+            Integer termMonths
+    ) {
+        PersonalBanner toBanner(String theme) {
+            // score 0: классический баннер модель не выбирает
+            return new PersonalBanner(
+                    "CLASSIC:" + product,
+                    "CLASSIC_" + product,
+                    "catalog",
+                    0.0,
+                    title,
+                    text,
+                    null,
+                    new PersonalBanner.HighlightDto(highlight, caption),
+                    List.of(perk),
+                    theme,
+                    null,
+                    List.of(),
+                    new PersonalBanner.CtaDto("NEW_APPLICATION", ctaLabel, product, amount, termMonths, null, null, null)
+            );
         }
     }
 }
