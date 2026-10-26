@@ -1,0 +1,17 @@
+{
+  "model_version": "l2-catboost-1.0",
+  "trained_at": "2026-10-24T19:47:10",
+  "n_train": 12583,
+  "n_test": 2417,
+  "auc": 0.7738,
+  "ks": 0.4202,
+  "psi": 0.0097,
+  "grade_distribution": {
+    "A": 757,
+    "B": 640,
+    "C": 30,
+    "D": 990
+  },
+  "default_rate_test": 0.1423,
+  "pd_mean_test": 0.1526
+}

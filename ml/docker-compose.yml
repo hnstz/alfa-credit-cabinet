@@ -1,0 +1,47 @@
+# Самостоятельный запуск ML-sidecar (для проверки жюри/разработчика).
+#   docker compose up --build
+# Сервис: http://localhost:8000  (Swagger UI: /docs, OpenAPI: /openapi.json)
+#
+# В общий compose команды добавляйте этот сервис как service `ml` и задайте
+# оркестратору env SCORING_URL=http://ml:8000. Контракт для фронтенда описан
+# в README, раздел про совместимость с alfa-credit-cabinet.
+services:
+  ml:
+    build:
+      context: .
+      args:
+        ML_SEED: "42"
+        ML_N_RECORDS: "15000"
+    image: alfa-hack/ml-sidecar:1.0
+    container_name: alfa-ml
+    env_file:
+      - .env.example            # переопределите своим .env при необходимости
+    environment:
+      ML_KEY_RATE: "17.0"
+      ML_LLM_ENABLED: "false"   # true — если поднят ollama (см. профиль ниже)
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          memory: 1500M         # CatBoost inference лёгкий; бюджет 12 ГБ соблюдён
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=4).status==200 else 1)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Опциональный LLM-провайдер (open-weights). Включается отдельно, чтобы не ломать
+  # бюджет RAM на основном прогоне: docker compose --profile llm up
+  ollama:
+    profiles: ["llm"]
+    image: ollama/ollama:latest
+    container_name: alfa-llm
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+
+volumes:
+  ollama_models:

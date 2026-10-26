@@ -1,3 +1,4 @@
+import { clearMlScoringCache } from './engine/mlScoring';
 import { advance } from './engine/pipeline';
 import { createSeed, DB_VERSION, disbursementHooks } from './seed';
 import type { MockDb } from './types';
@@ -48,5 +49,6 @@ export function withDb<T>(fn: (db: MockDb, now: number) => T): T {
 }
 
 export function resetDb() {
+  clearMlScoringCache();
   write(createSeed(Date.now()));
 }

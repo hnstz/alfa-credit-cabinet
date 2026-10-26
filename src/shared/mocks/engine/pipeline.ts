@@ -13,7 +13,9 @@ import { formatMoney, formatMonths, formatPercent } from '@/shared/lib/format';
 import { findBorrower } from '../fixtures/borrowers';
 import type { ScheduledAction, StoredApplication } from '../types';
 import { explainCounter } from './clientTexts';
+import { mlScoringEnabled, resolveMlScoring } from './mlScoring';
 import { computeEnrichment, computeScoring } from './scoring';
+import type { Scoring } from '@/entities/application';
 
 /**
  * Конвейер заявки: автоматические шаги по расписанию + действия людей.
@@ -131,6 +133,8 @@ export function createApplication(input: CreateApplicationInput): StoredApplicat
 
 export interface PipelineHooks {
   onDisbursed?: (app: StoredApplication, at: number) => void;
+  /** Не ходить в ML-сервис, считать локально (заполнение демо-данных в seed.ts: там код синхронный). */
+  localScoringOnly?: boolean;
 }
 
 function buildDocuments(app: StoredApplication): SigningDocument[] {
@@ -151,7 +155,13 @@ function buildDocuments(app: StoredApplication): SigningDocument[] {
   return docs;
 }
 
-function runStep(app: StoredApplication, action: ScheduledAction, at: number, hooks: PipelineHooks) {
+function runStep(
+  app: StoredApplication,
+  action: ScheduledAction,
+  at: number,
+  hooks: PipelineHooks,
+  mlScoring: Scoring | null = null,
+) {
   const profile = findBorrower(app.borrowerId);
   if (!profile) throw new MockApiError(500, 'NO_PROFILE', 'Нет профиля заёмщика');
 
@@ -183,7 +193,8 @@ function runStep(app: StoredApplication, action: ScheduledAction, at: number, ho
 
     case 'ROUTE': {
       if (!app.enrichment) app.enrichment = computeEnrichment(profile, app.form, at);
-      const scoring = computeScoring({ form: app.form, enrichment: app.enrichment, profile, now: at });
+      // Скоринг: ответ ML-сервиса, а если его нет (выключен / недоступен) — локальная заглушка
+      const scoring = mlScoring ?? computeScoring({ form: app.form, enrichment: app.enrichment, profile, now: at });
       app.scoring = scoring;
       const rec = scoring.recommendation;
       log(
@@ -232,11 +243,29 @@ function runStep(app: StoredApplication, action: ScheduledAction, at: number, ho
   }
 }
 
+/**
+ * Скоринг для шага ROUTE. 'pending' — ждём ответа ML (шаг остаётся в расписании, его добьёт следующий опрос).
+ */
+function scoringForRoute(app: StoredApplication, at: number, hooks: PipelineHooks): Scoring | 'pending' | null {
+  if (hooks.localScoringOnly || !mlScoringEnabled()) return null;
+  const profile = findBorrower(app.borrowerId);
+  if (!profile) return null;
+  const enrichment = app.enrichment ?? computeEnrichment(profile, app.form, at);
+  return resolveMlScoring(app, { form: app.form, enrichment, profile, now: at });
+}
+
 /** Выполняет все автоматические шаги, время которых наступило. */
 export function advance(app: StoredApplication, now: number, hooks: PipelineHooks = {}) {
   while (app.schedule.length > 0 && app.schedule[0].at <= now) {
-    const step = app.schedule.shift()!;
-    runStep(app, step.action, step.at, hooks);
+    const step = app.schedule[0];
+    let ml: Scoring | null = null;
+    if (step.action === 'ROUTE') {
+      const result = scoringForRoute(app, step.at, hooks);
+      if (result === 'pending') break;
+      ml = result;
+    }
+    app.schedule.shift();
+    runStep(app, step.action, step.at, hooks, ml);
   }
 }
 

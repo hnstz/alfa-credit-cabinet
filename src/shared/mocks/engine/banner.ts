@@ -272,6 +272,8 @@ export async function predictBanner(ctx: BannerContext): Promise<ModelPrediction
       signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    // 204 — модель решила ничего не показывать (ML /predict отвечает так, когда баннер не нужен)
+    if (res.status === 204) return null;
     const prediction = parsePrediction((await res.json()) as unknown);
     // Баннер про заявку без самой заявки показать нельзя — подстрахуемся правилами
     if (prediction && ['ACCEPT_OFFER', 'SIGN_DOCS'].includes(prediction.banner_code) && !ctx.focus) {
