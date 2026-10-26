@@ -41,14 +41,6 @@ public class ClientController {
         return ResponseEntity.ok(banner);
     }
 
-    /**
-     * Витрина дашборда: один персональный баннер (null — показывать нечего) и два классических.
-     */
-    @GetMapping("/banners")
-    public ResponseEntity<ClientService.BannerShowcase> banners(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(clientService.getShowcase(user));
-    }
-
     @PostMapping("/banner/events")
     public ResponseEntity<Void> bannerEvent(@AuthenticationPrincipal User user,
                                             @Valid @RequestBody BannerEventRequest request) {
